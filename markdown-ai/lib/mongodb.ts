@@ -6,7 +6,6 @@ if (!MONGODB_URI) {
   throw new Error("Please define the MONGODB_URI environment variable inside .env.local");
 }
 
-// Global caching prevents connection exhaustion during development hot-reloads
 let cached = (global as any).mongoose;
 
 if (!cached) {
