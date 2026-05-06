@@ -1,4 +1,5 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { type Document } from "mongoose";
+import { Schema } from "mongoose";
 
 export interface INote extends Document {
   title: string;

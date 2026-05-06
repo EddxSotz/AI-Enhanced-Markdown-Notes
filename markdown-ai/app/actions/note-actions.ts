@@ -3,25 +3,38 @@
 import { connectDB } from "@/lib/mongodb";
 import Note from "@/models/Note";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
-export async function saveNoteAction(noteId: string | null, content: string, title: string = "Untitled Note") {
-  try {
+const NoteSchema = z.object({
+  noteId: z.string().nullable(),
+  content: z.string(),
+  title: z.string().default("Untitled Note"),
+  aiSummary: z.string().optional(),
+});
+
+export async function saveNoteAction(rawData: z.infer<typeof NoteSchema>) {
+  try {    
+    const validatedData = NoteSchema.parse(rawData);
+    
     await connectDB();
 
     let savedNote: any;
     
-    if (noteId) {      
+    if (validatedData.noteId) {
       savedNote = await Note.findByIdAndUpdate(
-        noteId,
-        { content, title },
+        validatedData.noteId,
+        { 
+          content: validatedData.content, 
+          title: validatedData.title,
+          aiSummary: validatedData.aiSummary 
+        },
         { new: true }
       );
-    } else {      
-      savedNote = await Note.create({ content, title });
+    } else {
+      savedNote = await Note.create(validatedData);
     }
-    
-    revalidatePath("/notes");    
-    
+
+    revalidatePath("/notes");
     return JSON.parse(JSON.stringify(savedNote));
     
   } catch (error) {
